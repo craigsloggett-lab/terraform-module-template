@@ -1,7 +1,7 @@
 # Settings are described here: https://github.com/terraform-linters/tflint/blob/main/docs/user-guide/config.md
 config {
   format              = "default"
-  module              = true
+  call_module_type    = "all"
   force               = false
   disabled_by_default = false
 }
