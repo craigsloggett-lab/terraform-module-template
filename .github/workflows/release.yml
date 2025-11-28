@@ -40,10 +40,11 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   # Optionally publish the module to an HCP Terraform Private Module Registry (PMR).
+  # To enable the publish workflow job, remove the `&& false` conditional beside `if:`.
   publish:
     name: Publish
     needs: release
-    if: ${{ needs.release.outputs.new-release-published == 'true' }}
+    if: needs.release.outputs.new-release-published == 'true' && false # TODO: Remove `false`.
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout
