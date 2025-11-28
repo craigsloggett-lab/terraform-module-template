@@ -1,7 +1,18 @@
-# terraform-PROVIDER-NAME
-A Terraform module used to deploy DESCRIPTION.
+# terraform-module-template
+A GitHub repository template for creating new Terraform module.
 
 <!-- BEGIN_TF_DOCS -->
+## Usage
+
+### main.tf
+```hcl
+# tflint-ignore: terraform_required_version
+module "my_module" {
+  source = "<namespace>/<module>/<provider>"
+  # version = "x.x.x"
+}
+```
+
 ## Requirements
 
 | Name | Version |
@@ -12,17 +23,13 @@ A Terraform module used to deploy DESCRIPTION.
 
 No providers.
 
-## Modules
+## Inputs
 
-No modules.
+No inputs.
 
 ## Resources
 
 No resources.
-
-## Inputs
-
-No inputs.
 
 ## Outputs
 
