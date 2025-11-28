@@ -6,10 +6,10 @@ A GitHub repository template for creating new Terraform module.
 
 ### main.tf
 ```hcl
-# tflint-ignore: all
+# tflint-ignore: terraform_required_version
 module "my_module" {
-  source  = "<namespace>/<module>/<provider>"
-  version = "x.x.x"
+  source = "<namespace>/<module>/<provider>"
+  # version = "x.x.x"
 }
 ```
 
