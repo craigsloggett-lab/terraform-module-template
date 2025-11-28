@@ -54,7 +54,7 @@ jobs:
       run: |
         hcp_terraform_api_url="https://${hcp_terraform_hostname}/api/v2/organizations"
         list_modules_endpoint="${hcp_terraform_api_url}/${hcp_terraform_organization_name}/registry-modules"
-
+        # Get the module metadata, failing if the module is not already published.
         module_json="$(
           curl \
             --silent \
@@ -65,9 +65,17 @@ jobs:
               | select(.attributes["vcs-repo"]["repository-http-url"]
               | contains($repository_http_url))'
         )"
+        # Fail if there is nothing in the registry to publish to.
+        if [ -z "${module_json}" ]; then
+          echo "::error title=Module Not Found::No Module for ${github_repository_url} Found in Registry."
+          exit 1
+        fi
         module_name="$(printf '%s\n' "${module_json}" | jq -r '.attributes.name')"
         module_provider="$(printf '%s\n' "${module_json}" | jq -r '.attributes.provider')"
-
+        # Output to the GitHub Actions console.
+        printf 'module_name=%s\n' "${module_name}"
+        printf 'module_provider=%s\n' "${module_provider}"
+        # Populate the GitHub workflow job outputs.
         printf 'name=%s\n' "${module_name}" >> "$GITHUB_OUTPUT"
         printf 'provider=%s\n' "${module_provider}" >> "$GITHUB_OUTPUT"
     - name: Publish
