@@ -6,7 +6,7 @@ A GitHub repository template for creating new Terraform module.
 
 ### main.tf
 ```hcl
-# tflint-ignore: terraform_module_pinned_source
+# tflint-ignore: all
 module "my_module" {
   source  = "<namespace>/<module>/<provider>"
   version = "x.x.x"
