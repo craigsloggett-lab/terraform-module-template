@@ -10,102 +10,21 @@ permissions:
   issues: write
   pull-requests: write
 
-env:
-  github_repository_url: ${{ github.server_url }}/${{ github.repository }}
-  authorization_header: 'Authorization: Bearer ${{ secrets.hcp-terraform-api-token }}'
-  hcp_terraform_hostname: app.terraform.io
-  hcp_terraform_organization_name: craigsloggett-lab
-  hcp_terraform_api_token: ${{ secrets.hcp-terraform-api-token }}
-
 jobs:
   release:
-    name: Release
+    name: GitHub
     runs-on: ubuntu-24.04
-    # Skip running release workflow on forks
-    if: github.repository_owner == 'craigsloggett-lab'
+
     outputs:
-      new-release-published: ${{ steps.release.outputs.new_release_published }}
-      new-release-version: ${{ steps.release.outputs.new_release_version }}
+      new-release-published: ${{ steps.release.outputs.new-release-published }}
+      new-release-version: ${{ steps.release.outputs.new-release-version }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-      - name: Release
+
+      - name: Create a GitHub Release
         id: release
-        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
+        uses: craigsloggett/create-github-release@4a871ba389d1e0977cd6bc884c84199b455624c4 # v1.0.0
         with:
-          semantic_version: 25.0.2
-          extra_plugins: |
-            @semantic-release/git@10.0.1
-            conventional-changelog-conventionalcommits@9.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # Optionally publish the module to an HCP Terraform Private Module Registry (PMR).
-  # To enable the publish workflow job, remove the `&& false` conditional beside `if:`.
-  publish:
-    name: Publish
-    needs: release
-    if: needs.release.outputs.new-release-published == 'true' && false # TODO: Remove `false`.
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-      - name: Get Module Metadata
-        id: get-module-metadata
-        run: |
-          hcp_terraform_api_url="https://${hcp_terraform_hostname}/api/v2/organizations"
-          list_modules_endpoint="${hcp_terraform_api_url}/${hcp_terraform_organization_name}/registry-modules"
-          # Get the module metadata, failing if the module is not already published.
-          module_json="$(
-            curl \
-              --silent \
-              --header "${authorization_header}" \
-              --request GET \
-              "${list_modules_endpoint}" |
-              jq -r --arg repository_http_url "${github_repository_url}" '.data[]
-                | select(.attributes["vcs-repo"]["repository-http-url"]
-                | contains($repository_http_url))'
-          )"
-          # Fail if there is nothing in the registry to publish to.
-          if [ -z "${module_json}" ]; then
-            echo "::error title=Module Not Found::No Module for ${github_repository_url} Found in Registry."
-            exit 1
-          fi
-          module_name="$(printf '%s\n' "${module_json}" | jq -r '.attributes.name')"
-          module_provider="$(printf '%s\n' "${module_json}" | jq -r '.attributes.provider')"
-          # Output to the GitHub Actions console.
-          printf 'module_name=%s\n' "${module_name}"
-          printf 'module_provider=%s\n' "${module_provider}"
-          # Populate the GitHub workflow job outputs.
-          printf 'name=%s\n' "${module_name}" >> "$GITHUB_OUTPUT"
-          printf 'provider=%s\n' "${module_provider}" >> "$GITHUB_OUTPUT"
-      - name: Publish
-        run: |-
-          module_name="${{ steps.get-module-metadata.outputs.name }}"
-          module_provider="${{ steps.get-module-metadata.outputs.provider }}"
-          module_version="${{ needs.release.outputs.new-release-version }}"
-          commit_sha="${{ github.sha }}"
-
-          cat << EOF > payload.json
-            {
-              "data": {
-                "type": "registry-module-versions",
-                "attributes": {
-                  "version": "${module_version}",
-                  "commit-sha": "${commit_sha}"
-                }
-              }
-            }
-          EOF
-
-          content_type_header="Content-Type: application/vnd.api+json"
-          hcp_terraform_api_url="https://${hcp_terraform_hostname}/api/v2/organizations"
-          registry_modules_url="${hcp_terraform_api_url}/${hcp_terraform_organization_name}/registry-modules/private"
-          create_module_version_endpoint="${registry_modules_url}/${hcp_terraform_organization_name}/${module_name}/${module_provider}/versions"
-
-          curl \
-            --silent \
-            --header "${authorization_header}" \
-            --header "${content_type_header}" \
-            --request POST \
-            --data @payload.json \
-            "${create_module_version_endpoint}"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
