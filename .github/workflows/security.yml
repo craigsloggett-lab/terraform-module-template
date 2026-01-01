@@ -10,17 +10,17 @@ jobs:
     name: Checkov
     runs-on: ubuntu-24.04
     steps:
-    - name: Checkout
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-    - name: Setup Python
-      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
-      with:
-        python-version: 3.14.0
-    - name: Checkov
-      uses: bridgecrewio/checkov-action@8f61ce5b8a3afb4ca94d236b75201878ded6d2cd # v12.3077.0
-      with:
-        output_format: cli
-        output_file_path: console
-        quiet: true
-        check: CKV_AWS_1 # Use either a defined list of checks, or skip irrelevant checks with `skip_check`.
-        download_external_modules: true
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - name: Setup Python
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
+        with:
+          python-version: 3.14.0
+      - name: Checkov
+        uses: bridgecrewio/checkov-action@8f61ce5b8a3afb4ca94d236b75201878ded6d2cd # v12.3077.0
+        with:
+          output_format: cli
+          output_file_path: console
+          quiet: true
+          check: CKV_AWS_1 # Use either a defined list of checks, or skip irrelevant checks with `skip_check`.
+          download_external_modules: true
